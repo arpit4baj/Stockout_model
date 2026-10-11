@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Stockwise | Stockout Intelligence</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="static/styles.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <aside class="sidebar">
+        <a class="brand" href="/">
+            <span class="brand-icon">+</span>
+            <span>Stockwise<span class="brand-dot"></span></span>
+        </a>
+
+        <div class="nav-label">WORKSPACE</div>
+
+        <nav>
+            <a href="#overview" class="nav-link active">◫ Overview</a>
+            <a href="#inventory" class="nav-link active">▤ Inventory</a>
+            <a href="#trends" class="nav-link active">↗ Demand Trends</a>
+        </nav>
+        <div class="side-bottom">
+        <div class="help glass">
+          <span>✦</span>
+          <div class="sidebar-status">
+                <span class="status-dot"></span>
+                Dashboard ready
+            </div>
+          <p>Spot shortages early and plan smarter replenishment.</p>
+          <button id="helpBtn">Explore insights ↗</button>
+        </div>
+        <div class="user">
+          <div class="avatar">AB</div>
+          <div><b>Arpit Bajpai</b><small>Inventory manager</small></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <div class="eyebrow">INVENTORY INTELLIGENCE</div>
+                <h1>Overview</h1>
+                <p class="muted">Monitor inventory health and identify stockout risks.</p>
+            </div>
+
+            <button class="button button-dark"
+                    id="exportButton">
+                ↓ Export report
+            </button>
+        </header>
+
+        <section class="upload-panel">
+            <div class="upload-copy">
+                <span class="upload-icon">↑</span>
+                <div>
+                    <h3>Import inventory data</h3>
+                    <p>Upload a CSV containing your inventory and demand features.</p>
+                </div>
+            </div>
+
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input
+                    type="file"
+                    id="csvFile"
+                    name="file"
+                    accept=".csv"
+                    required
+                >
+
+                <button type="submit" class="button button-primary">
+                    Analyze dataset
+                </button>
+            </form>
+
+            <div id="uploadMessage" role="status"></div>
+        </section>
+
+        <section id="overview">
+
+            <div class="section-heading">
+                <div>
+                    <div class="eyebrow">YOUR INVENTORY AT A GLANCE</div>
+                    <h2>Inventory health</h2>
+                </div>
+                <span class="live-badge">
+                    <span class="status-dot"></span>
+                    Dataset overview
+                </span>
+            </div>
+
+            <div class="kpi-grid">
+
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <span>Total records</span>
+                        <span class="kpi-icon">▤</span>
+                    </div>
+                    <div class="kpi-value" id="totalProducts">—</div>
+                    <div class="kpi-foot">Inventory rows analyzed</div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <span>At-risk records</span>
+                        <span class="kpi-icon warning">!</span>
+                    </div>
+                    <div class="kpi-value" id="atRisk">—</div>
+                    <div class="kpi-foot">Inventory at or below demand</div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <span>Critical records</span>
+                        <span class="kpi-icon danger">↘</span>
+                    </div>
+                    <div class="kpi-value" id="critical">—</div>
+                    <div class="kpi-foot">Inventory at or below 50% of demand</div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <span>Total inventory</span>
+                        <span class="kpi-icon">▥</span>
+                    </div>
+                    <div class="kpi-value" id="totalInventory">—</div>
+                    <div class="kpi-foot">Units currently in inventory</div>
+                </article>
+
+            </div>
+        </section>
+
+        <section id="trends" class="chart-grid">
+
+            <article class="panel trend-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h3>Sales trend</h3>
+                        <p>Units sold over time</p>
+                    </div>
+                    <span class="chart-tag">Last 30 dates</span>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+
+                <div id="trendEmpty" class="empty-chart">
+                    Upload a dated CSV to view sales trends.
+                </div>
+            </article>
+
+            <article class="panel breakdown-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h3>Inventory breakdown</h3>
+                        <p>Records by stock status</p>
+                    </div>
+                </div>
+
+                <div class="donut-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+
+                <div id="statusLegend" class="status-legend"></div>
+            </article>
+
+        </section>
+
+        <section id="inventory" class="panel inventory-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <div class="eyebrow">STOCK MONITORING</div>
+                    <h3>Inventory records</h3>
+                    <p>Review items that may require replenishment.</p>
+                </div>
+
+                <span class="chart-tag" id="recordCount">0 records</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Store</th>
+                            <th>Product</th>
+                            <th>Inventory</th>
+                            <th>Units sold</th>
+                            <th>Demand forecast</th>
+                            <th>Coverage</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="inventoryBody">
+                        <tr>
+                            <td colspan="8" class="table-empty">
+                                Upload a CSV to view inventory records.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="table-note">
+                Status is based on inventory compared with demand forecast.
+                It is not an ML prediction.
+            </p>
+        </section>
+
+        <footer>
+            <span>Stockwise <span class="brand-dot">.</span></span>
+            <span>Inventory Intelligence Dashboard</span>
+        </footer>
+
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
