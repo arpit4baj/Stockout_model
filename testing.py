@@ -1,6 +1,7 @@
 
 import numpy as np
 import pandas as pd
+from logistic_model import LogisticRegScratch
 
 from sklearn.metrics import (
     accuracy_score,
@@ -11,7 +12,6 @@ from sklearn.metrics import (
     classification_report
 )
 
-from logisticRegrassionPipeline import LogisticRegScratch
 
 # 1. Load the separate testing dataset
 test_data = pd.read_csv("Dataset/new_stockout_test_dataset.csv")

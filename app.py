@@ -1,6 +1,6 @@
 
 from flask import Flask, render_template, request, jsonify, send_file
-from logisticRegrassionPipeline import LogisticRegScratch
+from logistic_model import LogisticRegScratch
 
 import pandas as pd
 import numpy as np
