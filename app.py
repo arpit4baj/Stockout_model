@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, jsonify, send_file
 from logistic_model import LogisticRegScratch
 
+import gzip
 import pandas as pd
 import numpy as np
 import io
@@ -560,7 +561,23 @@ def upload():
         }), 400
 
     try:
-        uploaded_data = pd.read_csv(file)
+        if request.headers.get("X-File-Compression", "").lower() == "gzip":
+            try:
+                with gzip.GzipFile(fileobj=file.stream) as compressed_file:
+                    csv_content = compressed_file.read(
+                        app.config["MAX_CONTENT_LENGTH"] + 1
+                    )
+            except (gzip.BadGzipFile, EOFError, OSError) as error:
+                raise ValueError("The compressed CSV file is invalid.") from error
+
+            if len(csv_content) > app.config["MAX_CONTENT_LENGTH"]:
+                raise ValueError(
+                    "The uncompressed CSV must be 20 MB or smaller."
+                )
+
+            uploaded_data = pd.read_csv(io.BytesIO(csv_content))
+        else:
+            uploaded_data = pd.read_csv(file)
 
         # Validate original columns and engineer missing features.
         prepared_data = prepare_data(uploaded_data)

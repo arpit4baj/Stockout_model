@@ -66,6 +66,21 @@ async function readJsonResponse(response) {
     return data;
 }
 
+async function gzipCsvFile(file) {
+    if (!window.CompressionStream) {
+        throw new Error("This browser cannot compress CSV uploads. Please use a current browser.");
+    }
+
+    const compressedStream = file.stream().pipeThrough(
+        new CompressionStream("gzip")
+    );
+    const compressedBlob = await new Response(compressedStream).blob();
+
+    return new File([compressedBlob], file.name, {
+        type: "application/gzip"
+    });
+}
+
 function destroyChart(chart) {
     if (chart) {
         chart.destroy();
@@ -528,9 +543,6 @@ if (uploadForm) {
             return;
         }
 
-        const formData = new FormData();
-        formData.append("file", file);
-
         const button = uploadForm.querySelector('button[type="submit"]');
 
         const originalButtonText = button
@@ -545,8 +557,15 @@ if (uploadForm) {
         showMessage("Uploading and analyzing your dataset...", "loading");
 
         try {
+            const compressedFile = await gzipCsvFile(file);
+            const formData = new FormData();
+            formData.append("file", compressedFile, file.name);
+
             const response = await fetch("/api/upload", {
                 method: "POST",
+                headers: {
+                    "X-File-Compression": "gzip"
+                },
                 body: formData
             });
 
