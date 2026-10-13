@@ -51,16 +51,28 @@ function showMessage(message, type = "") {
 }
 
 async function readJsonResponse(response) {
-    let data;
+    const body = await response.text();
+    let data = {};
 
     try {
-        data = await response.json();
-    } catch {
-        throw new Error("The server returned an invalid response.");
+        data = body ? JSON.parse(body) : {};
+    } catch (error) {
+        if (response.ok) {
+            throw new Error("The server returned an invalid response.");
+        }
     }
 
     if (!response.ok) {
-        throw new Error(data.error || "The request failed.");
+        const status = `${response.status} ${response.statusText}`.trim();
+        const message = response.status === 413
+            ? "The upload exceeded Vercel's 4.5 MB request limit."
+            : `The server returned HTTP ${status}.`;
+
+        throw new Error(data.error || message);
+    }
+
+    if (!body) {
+        throw new Error("The server returned an empty response.");
     }
 
     return data;
@@ -558,6 +570,12 @@ if (uploadForm) {
 
         try {
             const compressedFile = await gzipCsvFile(file);
+            if (compressedFile.size > 4 * 1024 * 1024) {
+                throw new Error(
+                    "This CSV is still too large after compression for Vercel's upload limit."
+                );
+            }
+
             const formData = new FormData();
             formData.append("file", compressedFile, file.name);
 
