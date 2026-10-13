@@ -15,7 +15,7 @@ from sklearn.metrics import (
 # ==========================================
 
 data = pd.read_csv(
-    r"C:\Users\HP\OneDrive\Desktop\New folder\Dataset\stockout_test_dataset.csv"
+    r"Dataset\stockout_test_dataset.csv"
 )
 
 data["Date"] = pd.to_datetime(data["Date"])
